@@ -10,6 +10,7 @@ import { DefaultTechDocsCollatorFactory } from '@backstage/plugin-search-backend
 import { Router } from 'express';
 import { PgSearchEngine } from '@backstage/plugin-search-backend-module-pg';
 import { StackOverflowQuestionsCollatorFactory } from '@backstage-community/plugin-stack-overflow-backend';
+import DefaultGithubDiscussionsCollatorFactory from '@backstage-community/plugin-search-backend-module-github-discussions';
 
 export default async function createPlugin(
   env: PluginEnvironment,
@@ -60,6 +61,15 @@ export default async function createPlugin(
         site: 'stackoverflow',
         pagesize: 100,
       },
+    }),
+  });
+
+  indexBuilder.addCollator({
+    schedule,
+    factory: DefaultGithubDiscussionsCollatorFactory.fromConfig(env.config, {
+      logger: env.logger,
+      host: 'github.com',
+      org: 'guidanti',
     }),
   });
 
