@@ -43,6 +43,7 @@
     "@backstage/plugin-search-backend-module-techdocs": "^0.1.26",
     "@backstage/plugin-search-backend-node": "^1.2.26",
     "@backstage/plugin-techdocs-backend": "^1.10.8",
+    "@backstage-community/plugin-search-backend-module-github-discussions": "link:../../../community-plugins/workspaces/github-discussions/plugins/search-backend-module-github-discussions",
     "@backstage-community/plugin-stack-overflow-backend": "^0.2.22",
     "@roadiehq/scaffolder-backend-module-http-request": "^4.3.2",
     "app": "link:../app",
