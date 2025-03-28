@@ -8,11 +8,13 @@ import CardContent from '@material-ui/core/CardContent';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import CheckBoxIcon from '@material-ui/icons/CheckBox';
+import WarningIcon from '@material-ui/icons/Warning';
 import { InfoCardVariants } from '@backstage/core-components';
 import { makeStyles } from '@material-ui/core/styles';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import { Link } from '@material-ui/core';
 import { green, red } from '@material-ui/core/colors';
+import { EntityRefLink } from '@backstage/plugin-catalog-react';
 
 const ratingChip = {
   borderRadius: '10px',
@@ -68,13 +70,21 @@ const useStyles = makeStyles({
     marginTop: '10px',
     marginBottom: '12px',
   },
-  policyRowContent: {
+  policyRowLinkAndStatus: {
     display: 'flex',
     flex: 4,
     alignItems: 'center',
   },
-  policyRowCheckbox: {
+  policyRowCompliance: {
+    display: 'flex',
+  },
+  policyRowCheckboxIcon: {
     fill: '#00be00',
+    fontSize: 40,
+    marginRight: '15px',
+  },
+  policyRowWarningIcon: {
+    fill: '#FFBF00',
     fontSize: 40,
     marginRight: '15px',
   },
@@ -87,14 +97,6 @@ const useStyles = makeStyles({
     backgroundColor: green['500'],
   },
 });
-
-const exampleComponentPolicies = [
-  'Component performs dependency chain analysis',
-  'Container vulnerability scanning report is 34 days old',
-  'Repository uses an automated dependency update tool',
-  'No crticial alerts older than 30 days',
-  'Repository does not contain unencrypted secrets',
-];
 
 const exampleSystemPolicies = [
   {
@@ -127,24 +129,39 @@ const exampleSystemPolicies = [
     description:
       'Components do not store unencrypted credentials in the repository',
   },
-];
+]; // 🚨 need to replace with real system compliance data
 
 interface PoliciesCardProps {
   variant?: InfoCardVariants;
   rating?: string | undefined;
 }
 
-const PolicyRow1 = ({ policy }: { policy: string }) => {
+const PolicyRow1 = ({
+  compliance,
+}: {
+  compliance: {
+    policy: string;
+    status: string;
+    failure_count: number;
+    total_count: number;
+  };
+}) => {
   const classes = useStyles();
+  const { policy, status, failure_count, total_count } = compliance;
   return (
     <Grid className={classes.policyRowContainer}>
-      <Grid className={classes.policyRowContent}>
-        <CheckBoxIcon className={classes.policyRowCheckbox} />
-        <Typography>{policy}</Typography>
+      <Grid className={classes.policyRowLinkAndStatus}>
+        {status === 'pass' ? (
+          <CheckBoxIcon className={classes.policyRowCheckboxIcon} />
+        ) : (
+          <WarningIcon className={classes.policyRowWarningIcon} />
+        )}
+        <EntityRefLink entityRef={`policy:default/${policy}`} />
       </Grid>
-      <Link style={{ cursor: 'pointer' }} variant="body2">
-        Learn more
-      </Link>
+      <Grid className={classes.policyRowCompliance}>
+        <Avatar className={classes.red}>{failure_count}</Avatar>
+        <Avatar className={classes.green}>{total_count - failure_count}</Avatar>
+      </Grid>
     </Grid>
   );
 };
@@ -161,7 +178,7 @@ const PolicyRow2 = ({
   const classes = useStyles();
   return (
     <Grid className={classes.policyRowContainer}>
-      <Grid className={classes.policyRowContent}>
+      <Grid className={classes.policyRowLinkAndStatus}>
         <Avatar className={classes.red}>{noncompliant}</Avatar>
         <Avatar className={classes.green}>{compliant}</Avatar>
         <Typography>{description}</Typography>
@@ -191,6 +208,27 @@ export const PolicyRating = ({ rating }: { rating: string | undefined }) => {
   );
 };
 
+const ComplianceRows = ({
+  compliances,
+}: {
+  compliances: {
+    policy: string;
+    status: string;
+    failure_count: number;
+    total_count: number;
+  }[];
+}) => {
+  if (Array.isArray(compliances) && compliances.length) {
+    return compliances.map(compliance => (
+      <>
+        <PolicyRow1 compliance={compliance} />
+        <Divider variant="middle" />
+      </>
+    ));
+  }
+  return <></>;
+};
+
 export function EntityPoliciesCard(props: PoliciesCardProps) {
   const { variant, rating } = props;
   const classes = useStyles();
@@ -215,19 +253,25 @@ export function EntityPoliciesCard(props: PoliciesCardProps) {
       />
       <Divider />
       <CardContent className={classes.cardContent}>
-        {entity.kind === 'Component'
-          ? exampleComponentPolicies.map(policy => (
-              <>
-                <PolicyRow1 policy={policy} />
-                <Divider variant="middle" />
-              </>
-            ))
-          : exampleSystemPolicies.map(policy => (
-              <>
-                <PolicyRow2 policy={policy} />
-                <Divider variant="middle" />
-              </>
-            ))}
+        {entity.kind === 'Component' ? (
+          <ComplianceRows
+            compliances={
+              entity.spec?.compliance as {
+                policy: string;
+                status: string;
+                failure_count: number;
+                total_count: number;
+              }[] // 🚨 how do i get it to see that it'll have compliance in spec?
+            }
+          />
+        ) : (
+          exampleSystemPolicies.map(policy => (
+            <>
+              <PolicyRow2 policy={policy} />
+              <Divider variant="middle" />
+            </>
+          ))
+        )}
       </CardContent>
     </Card>
   );

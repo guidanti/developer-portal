@@ -1,4 +1,5 @@
 export {
-  componentSecurityAlertsContent,
+  ComponentSecurityAlertsContent,
   SystemSecurityAlertsContent,
 } from './SecurityAlerts';
+export * from './columns';

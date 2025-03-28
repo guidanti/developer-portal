@@ -48,6 +48,7 @@ import {
   RELATION_DEPENDENCY_OF,
   RELATION_DEPENDS_ON,
   RELATION_HAS_PART,
+  RELATION_OWNED_BY,
   RELATION_PART_OF,
   RELATION_PROVIDES_API,
 } from '@backstage/catalog-model';
@@ -56,18 +57,16 @@ import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
 import { Mermaid } from 'backstage-plugin-techdocs-addon-mermaid';
 
-import { EntityPoliciesCard } from './EntityPoliciesCard';
 import {
-  componentSecurityAlertsContent,
+  EntityPoliciesCard,
+  ComponentSecurityAlertsContent,
   SystemSecurityAlertsContent,
-} from './SecurityAlerts';
-import { PolicyComplianceCard } from './PolicyComplianceCard';
-import {
+  PolicyComplianceCard,
   PolicyToolsCard,
   PolicyMostCompliantCard,
   PolicyLeastCompliantCard,
-} from './PolicyOverviewCards';
-import { PolicyScopeCard } from './PolicyScopeCard';
+  PolicyScopeCard,
+} from 'backstage-plugin-policy-react';
 
 const techdocsContent = (
   <EntityTechdocsContent>
@@ -160,7 +159,21 @@ const overviewContentWithPolicies = (
       <EntityAboutCard variant="gridItem" />
     </Grid>
     <Grid item md={6} xs={12}>
-      <EntityCatalogGraphCard variant="gridItem" height={400} />
+      <EntityCatalogGraphCard
+        variant="gridItem"
+        height={400}
+        relations={[
+          RELATION_PART_OF,
+          RELATION_HAS_PART,
+          RELATION_OWNED_BY,
+          RELATION_API_CONSUMED_BY,
+          RELATION_API_PROVIDED_BY,
+          RELATION_CONSUMES_API,
+          RELATION_PROVIDES_API,
+          RELATION_DEPENDENCY_OF,
+          RELATION_DEPENDS_ON,
+        ]}
+      />
     </Grid>
     <Grid item md={6} xs={12}>
       <EntityPoliciesCard variant="gridItem" rating="GOLD" />
@@ -205,7 +218,7 @@ const serviceEntityPage = (
     </EntityLayout.Route>
 
     <EntityLayout.Route path="/alerts" title="Security Alerts">
-      {componentSecurityAlertsContent}
+      {ComponentSecurityAlertsContent}
     </EntityLayout.Route>
   </EntityLayout>
 );
@@ -236,7 +249,7 @@ const websiteEntityPage = (
     </EntityLayout.Route>
 
     <EntityLayout.Route path="/alerts" title="Security Alerts">
-      {componentSecurityAlertsContent}
+      {ComponentSecurityAlertsContent}
     </EntityLayout.Route>
   </EntityLayout>
 );
@@ -272,10 +285,6 @@ const defaultEntityPage = (
 
     <EntityLayout.Route path="/docs" title="Docs">
       {techdocsContent}
-    </EntityLayout.Route>
-
-    <EntityLayout.Route path="/alerts" title="Security Alerts">
-      {componentSecurityAlertsContent}
     </EntityLayout.Route>
   </EntityLayout>
 );
@@ -377,7 +386,20 @@ const systemPage = (
           <EntityAboutCard variant="gridItem" />
         </Grid>
         <Grid item md={6} xs={12}>
-          <EntityCatalogGraphCard variant="gridItem" height={400} />
+          <EntityCatalogGraphCard
+            variant="gridItem"
+            height={400}
+            relations={[
+              RELATION_PART_OF,
+              RELATION_HAS_PART,
+              RELATION_API_CONSUMED_BY,
+              RELATION_API_PROVIDED_BY,
+              RELATION_CONSUMES_API,
+              RELATION_PROVIDES_API,
+              RELATION_DEPENDENCY_OF,
+              RELATION_DEPENDS_ON,
+            ]}
+          />
         </Grid>
         {/* <Grid item md={4} xs={12}>
           <EntityLinksCard />
@@ -475,7 +497,7 @@ export const entityPage = (
     <EntitySwitch.Case if={isKind('user')} children={userPage} />
     <EntitySwitch.Case if={isKind('system')} children={systemPage} />
     <EntitySwitch.Case if={isKind('domain')} children={domainPage} />
-    <EntitySwitch.Case if={isKind('policy')} children={policyPage} />
+    {/* <EntitySwitch.Case if={isKind('policy')} children={policyPage} /> */}
 
     <EntitySwitch.Case>{defaultEntityPage}</EntitySwitch.Case>
   </EntitySwitch>
